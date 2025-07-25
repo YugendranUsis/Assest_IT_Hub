@@ -1,0 +1,74 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"79_GNGbbwE\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Data Transformation</span>\",\"col\":12}},{\"id\":\"VGp2dQdAKr\",\"type\":\"card\",\"data\":{\"card_name\":\"Data Import Job\",\"col\":4}},{\"id\":\"3MIGWkpR1e\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Data Export and Transform Job\",\"col\":12}}]",
+ "creation": "2025-07-25 14:52:23.117993",
+ "custom_blocks": [
+  {
+   "custom_block_name": "Data Export and Transform Job",
+   "label": "Data Export and Transform Job"
+  }
+ ],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "equity",
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Data Transformation",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Data Import Job",
+   "link_count": 3,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Import Data Job",
+   "link_count": 0,
+   "link_to": "Data Import Job",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Extracted Data ",
+   "link_count": 0,
+   "link_to": "Extracted Data",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Transformed Data",
+   "link_count": 0,
+   "link_to": "Transformed Data",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2025-07-25 21:09:34.854080",
+ "modified_by": "Administrator",
+ "module": "IT Asset Hub",
+ "name": "Data Transformation",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 35.0,
+ "shortcuts": [],
+ "title": "Data Transformation"
+}

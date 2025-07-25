@@ -9,6 +9,7 @@ frappe.ui.form.on('Data Import Job', {
 		setTimeout(() => {
             $('.page-icon-group').hide();
         }, 100);
+		// Process file Button
         if (frm.doc.status === "Draft" ||frm.doc.status==="Failed") {
             frm.add_custom_button("Process File", function () {
                 frappe.call({
@@ -32,6 +33,8 @@ frappe.ui.form.on('Data Import Job', {
 			},100);
 
         }
+
+		//Extract Data button
 		if (frm.doc.status === "Completed") {
 			frm.set_df_property('upload_file','read_only',1);
 			frm.disable_save();
@@ -53,6 +56,7 @@ frappe.ui.form.on('Data Import Job', {
 
 		}
 
+		//Transform the data button
 		if (frm.doc.status === "Completed") {
 			frm.set_df_property('upload_file','read_only',1);
 			frm.disable_save();
@@ -87,6 +91,8 @@ frappe.ui.form.on('Data Import Job', {
 		}
         console.log(frm.doc.ttd)
 		console.log(frm.doc.itd)
+
+
 		//This For After insertion of transformaion hide the Transformation button and create new button for view thta data transformation view
 		if(frm.doc.ttd === frm.doc.itd && frm.doc.ttd !=0 && frm.doc.itd!=0){
 			setTimeout(function(){
@@ -114,6 +120,7 @@ frappe.ui.form.on('Data Import Job', {
 
 
 		}
+
 
 		//TOP bar Status
 
@@ -143,6 +150,7 @@ frappe.ui.form.on('Data Import Job', {
 		else{
 			Trnasfrmated_Data=format_status("Draft");
 		}
+		
         //let insert_status = format_status(frm.doc.failed_record > 0 ? "Failed" : frm.doc.inserted_record > 0 ? "Completed" : "Draft");
 
         let html = `
