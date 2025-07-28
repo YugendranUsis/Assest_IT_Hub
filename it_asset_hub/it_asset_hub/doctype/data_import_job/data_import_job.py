@@ -56,6 +56,7 @@ def process_uploaded_file(job_id):
         if missing_columns or extra_columns:
             doc.status = "Failed"
             doc.save()
+            frappe.db.commit()
             error_parts = []
             if missing_columns:
                 error_parts.append(f"Missing columns: {', '.join(missing_columns)}")
@@ -63,12 +64,13 @@ def process_uploaded_file(job_id):
                 error_parts.append(f"Unexpected columns: {', '.join(extra_columns)}")
 
             #frappe.throw(f"The uploaded file is missing required columns: {', '.join(missing_columns)}")
-            error_message = "Invalid file format. " + " | ".join(error_parts)
-            frappe.throw(error_message)
+            error_message = "Invalid file format.<br>" + "<br>".join(error_parts)
+            frappe.throw("Invalid file format. Please upload a file using the correct template.")
 
     except Exception as e:
         doc.status = "Failed"
         doc.save()
+        frappe.db.commit()
         frappe.throw(f"Error reading file: {e}")
 
     total = len(df)
