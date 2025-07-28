@@ -17,6 +17,8 @@ frappe.ui.form.on('Data Import Job', {
                     args: {
                         job_id: frm.doc.name
                     },
+					freeze: true,
+                    freeze_message: "Processing file, please wait...",
                     callback(r) {
                         frappe.msgprint("Processing completed.");
                         frm.reload_doc();
@@ -66,6 +68,8 @@ frappe.ui.form.on('Data Import Job', {
                     args: {
                         job_id: frm.doc.name
                     },
+					freeze: true,
+                    freeze_message: "Processing file, please wait...",
                     callback(r) {
 						console.log(r)
 						if(r.message==="Completed"){
@@ -150,8 +154,7 @@ frappe.ui.form.on('Data Import Job', {
 		else{
 			Trnasfrmated_Data=format_status("Draft");
 		}
-		
-        //let insert_status = format_status(frm.doc.failed_record > 0 ? "Failed" : frm.doc.inserted_record > 0 ? "Completed" : "Draft");
+
 
         let html = `
              <b>File Upload:</b> ${file_uploaded} &nbsp;&nbsp;&nbsp;

@@ -20,6 +20,11 @@ def safe_get(val):
 
 @frappe.whitelist()
 def process_uploaded_file(job_id):
+    EXPECTED_COLUMNS = [
+    "Date", "EMPL code", "EMPL Name", "Vouch No", "Ledger account",
+    "Account Name", "Remarks", "Dr Amt (AED)", "Cr Amt (AED)", "Balance"
+    ]
+
     doc = frappe.get_doc("Data Import Job", job_id)
     print(doc)
 
@@ -44,6 +49,23 @@ def process_uploaded_file(job_id):
         else:
             df = pd.read_excel(file_path)
 
+
+        actual_columns = df.columns.tolist()
+        missing_columns = [col for col in EXPECTED_COLUMNS if col not in actual_columns]
+        extra_columns = [col for col in actual_columns if col not in EXPECTED_COLUMNS]
+        if missing_columns or extra_columns:
+            doc.status = "Failed"
+            doc.save()
+            error_parts = []
+            if missing_columns:
+                error_parts.append(f"Missing columns: {', '.join(missing_columns)}")
+            if extra_columns:
+                error_parts.append(f"Unexpected columns: {', '.join(extra_columns)}")
+
+            #frappe.throw(f"The uploaded file is missing required columns: {', '.join(missing_columns)}")
+            error_message = "Invalid file format. " + " | ".join(error_parts)
+            frappe.throw(error_message)
+
     except Exception as e:
         doc.status = "Failed"
         doc.save()
@@ -52,6 +74,7 @@ def process_uploaded_file(job_id):
     total = len(df)
     success = 0
     failed = 0
+    error_message=""
     failed_rows = []
 
     for i, row in df.iterrows():
@@ -74,6 +97,7 @@ def process_uploaded_file(job_id):
         except Exception as e:
             failed += 1
             failed_rows.append({**row.to_dict(), "Error": str(e)})
+            error_message=str(e)
 
     # Save failed rows to file
     if failed_rows:
@@ -91,6 +115,26 @@ def process_uploaded_file(job_id):
     doc.failed_record = failed
     doc.status = "Completed" if failed == 0 else "Failed"
     doc.save()
+    current_user = frappe.session.user
+    if doc.status != "Failed":
+        frappe.get_doc({
+			"doctype":"Comment",
+			"reference_name":job_id,
+			"reference_doctype":"Data Import Job",
+			"comment_type":"Info",
+			"reference_owner":current_user,
+			"content":f"Total Records Fetch from Doument {total}. Total Records Inserted Successfully {success}. ",
+		}).insert()
+    else:
+        frappe.get_doc({
+			"doctype":"Comment",
+			"reference_doctype":"Data Import Job",
+			"comment_type":"Info",
+            "reference_name":job_id,
+			"reference_owner":current_user,
+			"content":f"Total Faild Records {failed} and Faild Record Reason {error_message}. Total Failed Records {error_message}",
+		}).insert()
+
 
     return "Processed"
 
@@ -107,6 +151,8 @@ def parse_date(date_str):
 @frappe.whitelist()
 def transform_data(job_id):
    Success=0
+   Failed=0
+   error_message=""
    result = frappe.db.sql("""
     SELECT
         emplcode AS `Employee Number`,
@@ -127,29 +173,59 @@ def transform_data(job_id):
 	""", (job_id, job_id), as_dict=True)
 
    for row in result:
-        doc = frappe.get_doc({
-            "doctype": "Transformed Data",  # change to your target Doctype
-            "employee_number": safe_get(row.get("Employee Number")),
-            "loan_component": safe_get(row.get("Loan Component")),
-            "loan_period": safe_get(row.get("Loan Period")),
-            "loan_amount": safe_get(row.get("Loan Amount")),
-            "rate_of_interest": safe_get(row.get("Rate of Interset")),
-            "start_date": parse_date(safe_get(row.get("Start Date"))),
-            "loan_type":safe_get(row.get("Loan Type")),
-            "job_id":job_id
-        })
-        doc.insert(ignore_permissions=True)
-        Success += 1
+        try:
+             doc = frappe.get_doc({
+                 "doctype": "Transformed Data",  # change to your target Doctype
+                 "employee_number": safe_get(row.get("Employee Number")),
+                 "loan_component": safe_get(row.get("Loan Component")),
+                 "loan_period": safe_get(row.get("Loan Period")),
+                 "loan_amount": safe_get(row.get("Loan Amount")),
+                 "rate_of_interest": safe_get(row.get("Rate of Interset")),
+                 "start_date": parse_date(safe_get(row.get("Start Date"))),
+                 "loan_type":safe_get(row.get("Loan Type")),
+                 "job_id":job_id
+                 })
+             doc.insert(ignore_permissions=True)
+             Success += 1
+        except Exception as e:
+            Failed += 1
+            error_message = str(e)
+
+
 
    total=len(result)
    frappe.db.set_value("Data Import Job",job_id,{
        "ttd":total,
        "itd":Success
    })
+   current_user = frappe.session.user
+#    frappe.get_doc({
+#         "doctype":"Comment",
+#         "reference_doctype":"Data Import Job",
+#         "comment_type":"Info",
+#         "reference_owner":current_user,
+#         "content":f"Total Data Transformed Records {total}. Total Data Transformed Records Inserted Successfully {Success}.",
+# 	}).insert()
 
    if(Success==total):
+       frappe.get_doc({
+        "doctype":"Comment",
+        "reference_doctype":"Data Import Job",
+        "comment_type":"Info",
+        "reference_name":job_id,
+        "reference_owner":current_user,
+        "content":f"Total Data Transformed Records {total}. Total Data Transformed Records Inserted Successfully {Success}.",
+	}).insert()
        return "Completed"
    else:
+       frappe.get_doc({
+        "doctype":"Comment",
+        "reference_doctype":"Data Import Job",
+        "comment_type":"Info",
+        "reference_name":job_id,
+        "reference_owner":current_user,
+        "content":f"Total Data Transformed Records {Failed}. Total Data Transformed Records Inserted Successfully {error_message}.",
+	}).insert()
        return "Failed"
 
 
