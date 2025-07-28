@@ -24,6 +24,7 @@ def process_uploaded_file(job_id):
     "Date", "EMPL code", "EMPL Name", "Vouch No", "Ledger account",
     "Account Name", "Remarks", "Dr Amt (AED)", "Cr Amt (AED)", "Balance"
     ]
+    current_user = frappe.session.user
 
     doc = frappe.get_doc("Data Import Job", job_id)
     print(doc)
@@ -64,6 +65,14 @@ def process_uploaded_file(job_id):
                 error_parts.append(f"Unexpected columns: {', '.join(extra_columns)}")
 
             #frappe.throw(f"The uploaded file is missing required columns: {', '.join(missing_columns)}")
+            frappe.get_doc({
+			"doctype":"Comment",
+			"reference_doctype":"Data Import Job",
+			"comment_type":"Info",
+            "reference_name":job_id,
+			"reference_owner":current_user,
+			"content":"Invalid file format. Please upload a file using the correct template.",
+		     }).insert()
             error_message = "Invalid file format.<br>" + "<br>".join(error_parts)
             frappe.throw("Invalid file format. Please upload a file using the correct template.")
 
@@ -117,7 +126,7 @@ def process_uploaded_file(job_id):
     doc.failed_record = failed
     doc.status = "Completed" if failed == 0 else "Failed"
     doc.save()
-    current_user = frappe.session.user
+
     if doc.status != "Failed":
         frappe.get_doc({
 			"doctype":"Comment",
